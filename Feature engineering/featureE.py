@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 import os
 from sklearn.preprocessing import MinMaxScaler
 
@@ -33,18 +32,26 @@ def stat_feature(raw_data):
 	return stat_fE
 
 def fft_ica(raw_data):
-	from scipy.fft import fft
-	from scipy.signal import find_peaks
-
-	fft_co = fft(raw_data)
-	fft_co = (abs(fft_co)/fft_co.shape)
-
-	length = fft_co.shape[0]
-	fft_co = fft_co[0:(length//2)]
-
-	peaks, _ = find_peaks(fft_co, threshold=4)
+  from scipy.fft import fft
+  from scipy.signal import find_peaks
 	
-	coeff = fft_co[peaks]
-	return fft_co, peaks
+  count = 0 # set initial counter
+  for k in raw_data: # read data by line
+    fft_co = fft(k)
+    raw_peak, _ = find_peaks(k, threshold = 4)
+    num_peaks = len(raw_peak) # count wave
+    fft_co = (abs(fft_co)/fft_co.shape[0])
 
+    length = fft_co.shape[0]
+    fft_co = fft_co[0:(length//2)]
+
+
+    peaks, _ = find_peaks(fft_co)
+    
+    coeff = fft_co[peaks][0:10] # fisrt 10 fft cofficients
+    coeff = np.append(coeff, num_peaks) 
+    res = coeff if count==0 else np.vstack((res, coeff))
+    count+=1
+# return a array with n*11 dimension
+  return res
 
